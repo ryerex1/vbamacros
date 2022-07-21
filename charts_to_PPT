@@ -1,0 +1,128 @@
+Sub Charts_to_PPT()
+
+' This Macro takes any charts you have made in Excel and makes a PowerPoint presentation out of them, with one chart per slide.
+' Paste this entire code into your VBA editor, and let the magic happen! I specified a few customizable parts in this code - feel free to modify them to your liking.
+
+'''''''''''''''''' WARNING '''''''''''''''''''''''''''
+ 
+Dim answer As String
+answer = InputBox("This Macro will paste ALL charts in this Excel workbook, so make sure to delete any charts you don't want in the PPT. Anything else (color, size, font) can be changed later. Type 'k' to continue, or type anything else to quit.", "Warning")
+If answer <> "K" And answer <> "k" Then
+     MsgBox "Run this macro again when you've formatted all the charts to your liking :)"
+     Exit Sub
+Else
+
+'''''''''''''''' HERE WE GO! ''''''''''''''''''''''''''
+
+    ''''''' Declaring variables ''''''''
+        Dim newPowerPoint As PowerPoint.Application
+        Dim ppPres As PowerPoint.Presentation
+        Dim activeSlide As PowerPoint.Slide
+        Dim cht As Excel.ChartObject
+     
+    ''''''' Start new instance '''''''
+        On Error Resume Next
+        Set newPowerPoint = GetObject(, "PowerPoint.Application")
+        On Error GoTo 0
+     
+    '''' Create a new PowerPoint ''''
+        If newPowerPoint Is Nothing Then
+            Set newPowerPoint = New PowerPoint.Application
+        End If
+     
+    '''''' Show the PowerPoint ''''''
+        newPowerPoint.Visible = True
+        
+        Set ppPres = newPowerPoint.Presentations.Add
+        
+    '''''' Creating title slide '''''
+    
+        Set activeSlide = ppPres.Slides.Add(1, ppLayoutTitle)
+        activeSlide.Shapes(1).TextFrame.TextRange = "Your Title Here"     ' You can change what's in the quotes to whatever title you want on the first slide
+        activeSlide.Shapes(2).TextFrame.TextRange = Date                  ' Also feel free to modify the subtitle here. Date will give the current date in mm/dd/yyyy format, but you can replace Date with "any text" if desired. 
+        
+    ''''' Copying image for title slide, if applicable ''''               ' These next four lines are commented out, but if you have an image (e.g. logo) you want pasted on the title slide, delete the ' at the beginning of the lines.
+        'Worksheets("Worksheet_name_here").Shapes(1).Copy                 ' If you do want to use it, replace Worksheet_name_here with the name of the worksheet that has your title slide image, and make sure it's the only image on that sheet.
+        'activeSlide.Shapes.Paste
+        'activeSlide.Shapes(3).Top = 430                                  ' Any .Top or .Left functions indicate a customizable positioning. ".Top" means x pixels from the top of the slide and ".Left" means x pixels from the left of the slide.
+        'activeSlide.Shapes(3).Left = 50                                  ' In this case, you can change the 430 or the 50 to any number you like. Currently, it puts the image in the bottom-left corner of the title slide.
+        
+    ''''' Start looping through the worksheet ''''''
+        Dim wS_count As Integer
+        Dim i As Integer
+
+        wS_count = ActiveWorkbook.Worksheets.Count                        ' Setting wS_count to the number of worksheets in the active workbook.
+
+        For i = 1 To wS_count                                             ' Loop start
+
+            ActiveWorkbook.Worksheets(i).Select
+            
+            For Each cht In ActiveSheet.ChartObjects                      ' Grabbing all the charts on each sheet in the active workbook.
+            
+            '''''''''''''' Adding a new slide in the PPT ''''''''''''''''''''
+                newPowerPoint.ActivePresentation.Slides.Add newPowerPoint.ActivePresentation.Slides.Count + 1, ppLayoutText
+                newPowerPoint.ActiveWindow.View.GotoSlide newPowerPoint.ActivePresentation.Slides.Count
+                Set activeSlide = newPowerPoint.ActivePresentation.Slides(newPowerPoint.ActivePresentation.Slides.Count)
+                    
+            ''''''''''''' Copy and paste charts, one by one, into new slides in the PPT ''''''''
+                cht.Select
+                ActiveChart.ChartArea.Copy
+                activeSlide.Shapes.Paste.Select
+        
+            '''''''''' Set the title of the slide the same as the title of the chart '''''''''''
+                activeSlide.Shapes(1).TextFrame.TextRange.Text = cht.Chart.ChartTitle.Text
+
+                activeSlide.Shapes(1).Width = 817
+                activeSlide.Shapes(1).Height = 65
+                activeSlide.Shapes(1).TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter       ' Aligns slide title to center
+                activeSlide.Shapes(1).TextFrame.TextRange.Font.Name = "Corbel"                            ' Customizable font name
+                activeSlide.Shapes(1).TextFrame.TextRange.Font.Size = 32                                  ' Customizable font size
+                
+            '''''''''''''' Creating a comment box and positioning it on the slide '''''''''''''''
+                activeSlide.Shapes(2).TextFrame.TextRange.Text = "Comments:" & vbCrLf & "Info here"       ' Customizable text
+                activeSlide.Shapes(2).TextFrame.TextRange.ParagraphFormat.Bullet = msoFalse
+                activeSlide.Shapes(2).TextFrame.TextRange.Font.Name = "Corbel"                            ' Customizable font name
+                activeSlide.Shapes(2).TextFrame.TextRange.Characters(1, 9).Font.Bold = msoTrue            ' Can play with the fonts and sizes to your liking
+                activeSlide.Shapes(2).TextFrame.TextRange.Characters(1, 9).Font.Size = 24
+                activeSlide.Shapes(2).TextFrame.TextRange.Characters(10, 18).Font.Size = 16
+                
+                activeSlide.Shapes(2).Height = 385              ' Can play with these numbers to get your chart size and positioning just right.
+                activeSlide.Shapes(2).Width = 200               ' This Macro will make all charts the same size, but remember you can always drag and resize later in the PPT if it's not perfect.
+                activeSlide.Shapes(2).Left = 680
+                activeSlide.Shapes(2).Top = 110
+            ''''''''''''' If you don't want a caption text box, you can comment out lines 82-92 and resize or reposition the chart below. '''''''''''''    
+            
+            '''''''''''' Positioning the chart '''''''''''''''
+                activeSlide.Shapes(3).Height = 385              ' These numbers assume you will have a comment box on the right.
+                activeSlide.Shapes(3).Width = 585               ' If you don't want the comment box, you can resize the Width to around 700 or even 800.
+                activeSlide.Shapes(3).Left = 65
+                activeSlide.Shapes(3).Top = 110
+   
+            Next                      ' Does the same process (lines 63-99) for the next chart on the Excel sheet
+                                      ' If there are no other charts on the sheet, or if there was no chart on the sheet...
+        Next i                        ' Go to next worksheet in Excel workbook, and do it all again!
+        
+    
+    '''''''' Breaking all links ''''''''''
+        Dim shp As PowerPoint.Shape
+        Dim sld As Slide
+        
+        For Each sld In newPowerPoint.ActivePresentation.Slides
+            For Each shp In sld.Shapes
+                On Error Resume Next
+                    shp.LinkFormat.Update
+                    shp.LinkFormat.BreakLink
+                    
+                    If shp.Type = msoChart Then               ' Removing the titles of the charts, so there aren't two titles on each slide
+                        shp.Chart.HasTitle = False            ' If you would prefer to keep the chart titles (e.g. you want to change the slide title to something else), comment out lines 119-121.
+                    End If
+                    
+                On Error GoTo 0
+            Next shp
+        Next sld
+
+''''' Final message: If you want to spice up the slides, go to Design --> Design Ideas in PowerPoint, and there will sometimes be some beautiful layouts for the slide you're on!
+
+End If
+
+End Sub
