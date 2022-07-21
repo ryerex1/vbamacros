@@ -4,7 +4,7 @@ Here are all of my general-purpose VBA Macros which I've found to be helpful.
 ### Charts_to_PPT: 
 A Macro that takes any charts you've made in Excel and directly imports them, one chart per slide, into a PowerPoint Presentation. Easy instructions and customizable parts!
 
-Instructions:
+#### Instructions:
 1. Since this Macro creates a PowerPoint and is not only limited to Excel, make sure to add a reference to the Microsoft PowerPoint library, or else this may not run properly. In the VBA editor on your Excel (ALT + F11), click 'Tools' in the upper-left hand corner, then 'References'. Scroll down to Microsoft PowerPoint X.0 Object Library, check the box, and click 'OK'. (It might be a bit of scrolling.)
 2. Copy and paste the entire code (lines 1-128) into your VBA editor. To do this, press ALT + F11, then click 'Insert' in the upper left corner, then 'Module'. Now copy and paste this code into there.
 3. Finally, X out of the VBA editor and click back into your Excel workbook. Press ALT + F8, then click on 'Charts_to_PPT', and finally 'Run'. Follow the instruction prompts, and the Macro should create a PowerPoint!
