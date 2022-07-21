@@ -16,9 +16,9 @@ The most common error, I'm guessing, will be a 'User defined type' error. This j
 Hope this can save you some time!
 
 ## More Macros on the way...
+Stay tuned!
 
 ## Final notes:
-
 If there are any other errors, potential improvements, or anything else you'd like to see, please let me know! Criticism is the best way to learn, and I appreciate it greatly. Thanks!
 
 -Reilly
