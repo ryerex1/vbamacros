@@ -1,5 +1,5 @@
 # vbamacros
-Here are all of my general-purpose VBA Macros which I've found to be helpful.
+Here are some of my Excel VBA Macros which I've found to be helpful.
 
 ### Nonce_Values: 
 A Macro that queries a blockchain API and returns the nonce values of any range of blocks you want, based on inputted block heights! _Note: this Macro only works on Windows computers, but a Mac version is on the way!_
