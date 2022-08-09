@@ -2,7 +2,7 @@
 Here are all of my general-purpose VBA Macros which I've found to be helpful.
 
 ### Nonce_Values: 
-A Macro that queries a blockchain API and returns the nonce values of any range of blocks you want, based on inputted block heights! Note: this only works on Windows computers. A Mac version on the way!
+A Macro that queries a blockchain API and returns the nonce values of any range of blocks you want, based on inputted block heights! _Note: this Macro only works on Windows computers, but a Mac version is on the way!_
 
 #### Instructions:
 1. Make sure to add two references: Microsoft WinHTTP Services and Microsoft Scripting Runtime. In the VBA editor on your Excel (ALT + F11), click 'Tools' in the upper-left hand corner, then 'References'. Scroll down to Microsoft WinHTTP Services, check the box, and click 'OK'. (It might be a bit of scrolling.) Then do the same for Microsoft Scripting Runtime.
