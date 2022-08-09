@@ -1,0 +1,165 @@
+Sub Nonce_Values()
+
+' =========================================================================================================================== '
+' PURPOSE:
+' This Macro queries a Blockchain API to get Nonce values, from any block number to any block number that the user specifies.
+' The data will be placed based off of the cell highlighted when the Macro is run. (i.e. ActiveCell).
+'
+' IMPORTANT FIRST STEPS:
+'   - i.e. do these steps before running the Macro, or it will not work!
+'
+' 1. Make sure you have these References enabled, in this order: Microsoft WinHTTP Services, Microsoft Scripting Runtime
+' 2. Download the JsonConverter.bas file from https://github.com/VBA-tools/VBA-JSON,
+'      then drag the file into the "Modules" section of this VBA Editor. It should add itself automatically as the JsonConverter module.
+' 3. Click on the cell in your Excel where you want the table to be placed. (That cell will be the top-left-most cell in the table.)
+'
+' 4. Finally, run the Macro by pressing ALT+F8 at the same time. Click on Nonce_Values, then click Run! Follow the instructions from there.
+'
+' ENJOY!
+' =========================================================================================================================== '
+
+' =================================================================== '
+'                       Error Handling message                        '
+' =================================================================== '
+
+    On Error GoTo ErrorHandler
+
+' =================================================================== '
+'     Changing settings to make Macro faster and more interactive     '
+' =================================================================== '
+
+    Dim appStatus As Variant
+    
+    With Application
+        .ScreenUpdating = False
+        If .StatusBar = False Then appStatus = False Else appStatus = .StatusBar
+    End With
+
+' =================================================================== '
+'                   Getting latest block height                       '
+' =================================================================== '
+    
+    Dim latest_request As New WinHttpRequest
+    
+    latest_request.Open "GET", "https://blockchain.info/latestblock"
+    latest_request.Send
+    
+    If latest_request.Status <> 200 Then
+        MsgBox ("Error with latest block query.")
+        Exit Sub
+    End If
+    
+    Dim latest_response As Object
+    Set latest_response = JsonConverter.ParseJson(latest_request.ResponseText)
+    
+    Dim latest As Long
+    latest = latest_response("height")
+
+' =================================================================== '
+'                   Prompting user for some info                      '
+' =================================================================== '
+    
+    Dim num_a As Long
+    Dim num_b As Long
+    
+    num_a = InputBox("Please enter starting block number, any number from 0 to " & latest & ".", "Start Block")
+    
+    num_b = InputBox("Please enter ending block number, any number from " & a & " to " & latest & ".", "End Block")
+    
+    If num_b < num_a Then
+        MsgBox ("Please make sure your End Block is greater than your Start Block and try again.")
+        Exit Sub
+    End If
+
+' =================================================================== '
+'              Formatting the header row of the table                 '
+' =================================================================== '
+
+    Dim r_start As Integer
+    Dim c_start As Integer
+    
+    r_start = ActiveCell.Row + 1
+    c_start = ActiveCell.Column
+    
+    With ActiveCell
+        .Value = "Block"
+        .Font.Bold = True
+        .HorizontalAlignment = xlCenter
+    End With
+    
+    With ActiveCell.Offset(0, 1)
+        .Value = "Nonce"
+        .Font.Bold = True
+        .HorizontalAlignment = xlCenter
+    End With
+
+' =================================================================== '
+'                 Let the official querying begin!                    '
+' =================================================================== '
+
+    Dim i As Long
+    
+    For i = num_a To num_b
+    
+        Application.StatusBar = "Processing block " & i
+        
+        Dim request As New WinHttpRequest
+        
+        request.Open "GET", "https://blockchain.info/rawblock/" & Str(i) & "/?format.json"
+        request.Send
+        
+        If request.Status <> 200 Then
+            MsgBox latest_request.ResponseText
+            Exit Sub
+        End If
+        
+        Dim response As Object
+        Set response = JsonConverter.ParseJson(request.ResponseText)
+        
+        Cells(r_start, c_start).Value = i
+        
+        Cells(r_start, c_start + 1).Value = response("nonce")
+        
+        r_start = r_start + 1
+        
+    Next i
+
+' =================================================================== '
+'                   Final formatting of the table                     '
+' =================================================================== '
+
+    ActiveCell.EntireColumn.ColumnWidth = 10
+    ActiveCell.Offset(0, 1).EntireColumn.ColumnWidth = 14
+    
+    Dim end_cell As CellFormat
+    
+    Range(ActiveCell, ActiveCell.Offset(num_b - num_a + 1, 1)).HorizontalAlignment = xlCenter
+    
+    Cells(r_start - 1, c_start + 1).Select
+
+' =================================================================== '
+'                    Restoring default settings                       '
+' =================================================================== '
+
+    With Application
+        .ScreenUpdating = True
+        .StatusBar = appStatus
+    End With
+
+Exit Sub
+
+' =================================================================== '
+'                           Error Handler                             '
+' =================================================================== '
+
+ErrorHandler:
+    
+    If Err.number = 13 Then
+        MsgBox "Please make sure you only input numbers, and run this Macro again."
+        Exit Sub
+    Else
+        MsgBox "The following error occurred: " & Err.Description
+        Exit Sub
+    End If
+
+End Sub
